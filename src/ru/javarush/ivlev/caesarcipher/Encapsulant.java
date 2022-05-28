@@ -58,9 +58,9 @@ public class Encapsulant {
 
     private static char codeChar(char ch, int key){
             if (ch>=fromKyr && ch<fromKyr+countKyr){// кирилица utf-8
-                return  (char)(((ch+key-fromKyr+countKyr)%(countKyr))+fromKyr);
+                return  (char)(((ch+key-fromKyr+countKyr*10)%(countKyr))+fromKyr);
             }else if (ch>=fromEn && ch<fromEn+countEn){ // big En
-                return (char)(((ch+key-fromEn+countEn)%(countEn))+fromEn);
+                return (char)(((ch+key-fromEn+countEn*10)%(countEn))+fromEn);
             }
             return ch;
     }
