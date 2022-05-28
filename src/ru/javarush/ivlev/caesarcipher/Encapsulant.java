@@ -43,9 +43,9 @@ public class Encapsulant {
     private static char codeChar(char ch, int key){
 
             if (ch>=fromKyr && ch<fromKyr+countKyr){// кирилица utf-8
-                return  (char)(((ch+key-fromKyr)%(countKyr))+fromKyr);
+                return  (char)(((ch+key-fromKyr+countKyr)%(countKyr))+fromKyr);
             }else if (ch>=fromEn && ch<fromEn+countEn){ // big En
-                return (char)(((ch+key-fromEn)%(countEn))+fromEn);
+                return (char)(((ch+key-fromEn+countEn)%(countEn))+fromEn);
             }
             return ch;
     }
@@ -83,7 +83,7 @@ public class Encapsulant {
 
         for (int i = 0; i > (- countEn); i--) {
             freqChar.clear();
-            Path newFile = toDirPath.resolve(fileName + " KEY = " + (-i) + ext);
+            Path newFile = toDirPath.resolve(fileName + " KEY=" + (-i) + ext);
             encodeFile(fromFilePath, newFile, i, freqChar);
 
             int possible =0;
