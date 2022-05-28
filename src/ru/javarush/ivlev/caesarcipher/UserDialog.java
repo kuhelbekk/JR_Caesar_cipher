@@ -8,6 +8,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Scanner;
 
+/**
+ * Ивлев Алексей
+ * Клас диалога для определения нужд пользователя
+ */
 public class UserDialog {
     Scanner console;
     PrintStream outputStream;
@@ -54,7 +58,11 @@ public class UserDialog {
     }
 
 
-
+    /**
+     * @param question - Вопрос с предполагаемым ответом да или нет
+     *                 ответ Y или N предполагается на английском
+     * @return возвращает бинарный выбор пользователя
+     */
 
     private boolean questionYesNo(String question){
         for(int i=0 ; i<3; i++){
@@ -71,7 +79,12 @@ public class UserDialog {
     }
 
 
-
+    /**
+     * Диалог запроса пути файла
+     * @param question - вопрос о назначении файла
+     * @param createNewFile - нужно ли учитывать что файл будет создан
+     * @return возвращает путь к файлу или null  если пользователь не определился
+     */
 
     private Path requestFile(String question, boolean createNewFile){
         Path filePath ;
@@ -116,6 +129,11 @@ public class UserDialog {
         return null;
     }
 
+    /**
+     * Диалог запроса директории
+     * @param question - вопрос о назначении файла
+     * @return возвращает путь  или null  если пользователь не определился
+     */
     private Path requestDir(String question) {
         Path dirPath = null;
         for (int i = 0; i < 3; i++) {
@@ -150,6 +168,7 @@ public class UserDialog {
     }
 
 
+
     private boolean codeDialog(boolean isCode) {
         Path fromFilePath = requestFile(questionOpenFile,false);//Path.of("fromFile.txt") ;//
         if (fromFilePath != null){
@@ -158,10 +177,15 @@ public class UserDialog {
                 for (int k = 0; k < 3; k++) {
                     outputStream.println("Укажите цифровой ключ");
                     if (console.hasNextInt()) {
+                        int key = console.nextInt();
+                        if (key<=0){
+                            outputStream.println("Ключ должен быть положительным числом");
+                            continue;
+                        }
                         if (isCode){
-                            return Encapsulant.encodeFile(fromFilePath, toFilePath,  console.nextInt());
+                            return Encapsulant.encodeFile(fromFilePath, toFilePath,  key);
                         }else{
-                            return Encapsulant.encodeFile(fromFilePath, toFilePath,console.nextInt()*-1);
+                            return Encapsulant.encodeFile(fromFilePath, toFilePath,key*-1);
                         }
                     }else{
                         console.next();

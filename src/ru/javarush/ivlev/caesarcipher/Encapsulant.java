@@ -8,17 +8,33 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+
 public class Encapsulant {
+    /**
+     * Класс для шифрования
+     *  в переменных указан символ начала алфавита и длинна алфавита
+     *  в множестве frequentChar содержатся наиболее частые буквы алфавитов применяемые в человекочитаемом тексте
+     */
     static final  char fromKyr = 'Ё';
     static final  char countKyr = 81;
     static final  char fromEn = '!';
     static final  char countEn = 93;
+
+
     static final HashSet <Character> frequentChar = new HashSet<>(){{
         add('a');add('e');add('i');add('o');add('t');add('s');add('n');add('h');add('r');add(' ');
         add('о');add('е');add('а');add('и');add('н');add('т');add('с');add('р');add('в');add('л');
     }};
 
 
+    /**
+     *
+     * @param fromFile - что шифруем
+     * @param toFile - куда шифруем
+     * @param key - чм шифруем
+     * @param freqChar - если передать не null  то  тут окажется частота символов
+     * @return   всегда возвращает true, если не выбросило исключение
+     */
     public static boolean encodeFile(Path fromFile, Path toFile, int key, Map<Character,Integer> freqChar){
         if (fromFile == null || toFile == null) throw new IllegalArgumentException("Неправильно указаны пути к файлам");;
         try (InputStreamReader in = new InputStreamReader(Files.newInputStream(fromFile));
@@ -41,7 +57,6 @@ public class Encapsulant {
     }
 
     private static char codeChar(char ch, int key){
-
             if (ch>=fromKyr && ch<fromKyr+countKyr){// кирилица utf-8
                 return  (char)(((ch+key-fromKyr+countKyr)%(countKyr))+fromKyr);
             }else if (ch>=fromEn && ch<fromEn+countEn){ // big En
@@ -49,9 +64,7 @@ public class Encapsulant {
             }
             return ch;
     }
-    private static void codeCharArray(char[] chars, int length, int key){
-        codeCharArray(chars,length,key,null);
-    }
+
 
     private static void codeCharArray(char[] chars, int length, int key, Map<Character,Integer> freqChar){
         for(int i = 0; i<length; i++){
