@@ -12,6 +12,7 @@ import java.util.Scanner;
  * Ивлев Алексей
  * Клас диалога для определения нужд пользователя
  */
+
 public class UserDialog {
     Scanner console;
     PrintStream outputStream;
@@ -22,6 +23,8 @@ public class UserDialog {
         this.console = new Scanner(in);
         this.outputStream =  out;
     }
+
+
 
     public void startDialog() {
         if (questionYesNo("Нужно зашифровать файл? ")) {
@@ -168,7 +171,6 @@ public class UserDialog {
     }
 
 
-
     private boolean codeDialog(boolean isCode) {
         Path fromFilePath = requestFile(questionOpenFile,false);//Path.of("fromFile.txt") ;//
         if (fromFilePath != null){
@@ -216,7 +218,6 @@ public class UserDialog {
         }
     }
 
-
     private boolean bruteForseDialog() {
         Path fromFilePath =  requestFile(questionOpenFile,false);
         if (fromFilePath != null){
@@ -238,7 +239,6 @@ public class UserDialog {
         return false;
     }
 
-
     private boolean startBrutForce(Path fromFilePath, Path toDirPath){
 
         int res =  Encapsulant.bruteForseFile(fromFilePath, toDirPath);
@@ -251,13 +251,12 @@ public class UserDialog {
     }
 
 
-
     private boolean fileExistInDir(Path toDirPath) {
         try (DirectoryStream<Path> files = Files.newDirectoryStream(toDirPath)) {
             for (Path path : files)
                 return true;
         } catch (IOException e) {
-            outputStream.println("Ошибка доступа к директории: " +toDirPath);
+            outputStream.println("Ошибка доступа к директории: " +toDirPath );
             throw new IllegalArgumentException("Ошибка доступа к директории: " +toDirPath,e);
         }
         return false;
