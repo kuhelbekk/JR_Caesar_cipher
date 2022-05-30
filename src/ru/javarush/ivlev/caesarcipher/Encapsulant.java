@@ -21,7 +21,7 @@ public class Encapsulant {
     private static final char countEn = 93;
 
 
-    static final HashSet<Character> frequentChar = new HashSet<>() {{
+    private static final HashSet<Character> frequentChar = new HashSet<>() {{
         add('a');
         add('e');
         add('i');
@@ -43,6 +43,9 @@ public class Encapsulant {
         add('в');
         add('л');
     }};
+
+
+
     private static final int BUFFER_SIZE = 1024;
     private static final int MAX_LETTERS_COUNT_FOR_CHECK = 10;
 
