@@ -54,7 +54,7 @@ public class Encapsulant {
      * @return всегда возвращает true, если не выбросило исключение
      */
     public static boolean encodeFile(Path fromFile, Path toFile, int key, Map<Character, Integer> freqChar) {
-        if (fromFile == null || toFile == null) throw new IllegalArgumentException("Неправильно указаны пути к файлам");
+        if (fromFile == null || toFile == null) throw new PathAccessException("Неправильно указаны пути к файлам");
         ;
         try (InputStreamReader in = new InputStreamReader(Files.newInputStream(fromFile));
              OutputStreamWriter out = new OutputStreamWriter(Files.newOutputStream(toFile))) {
@@ -66,7 +66,7 @@ public class Encapsulant {
             }
 
         } catch (IOException ex) {
-            throw new IllegalArgumentException("Ошибка чтения/записи файла при шифровании ", ex);
+            throw new PathAccessException("Ошибка чтения/записи файла при шифровании ", ex);
         }
         return true;
     }
@@ -118,10 +118,9 @@ public class Encapsulant {
     }
 
 
-
     public static int bruteForceFile(Path fromFilePath, Path toDirPath) {
         if (fromFilePath == null || toDirPath == null)
-            throw new IllegalArgumentException("Неправильно указаны пути к файлам");
+            throw new PathAccessException("Неправильно указаны пути к файлам");
         String fileName = getFileName (fromFilePath.getFileName().toString());
         String fileExt = getFileExt(fromFilePath.getFileName().toString());
 
@@ -149,6 +148,7 @@ public class Encapsulant {
             }
         }
         if (maxPossible > 4) { //нашли наиболее вероятный ключ
+            //  не знаю, правильно ли сохранять удачно расшифрованный фаил отдельно или достаточно указать ключ для расшифровки
             // encodeFile(fromFilePath, toDirPath.resolve("$" + maxPossible +" Key = "+(-possibleKey)+ fileName + ext), possibleKey );
             return -possibleKey;
         }
@@ -169,7 +169,7 @@ public class Encapsulant {
     }
 
     public static int encodeAnalysis(Path fromFilePath) {
-        if (fromFilePath == null) throw new IllegalArgumentException("Неправильно указаны пути к файлам");
+        if (fromFilePath == null) throw new PathAccessException("Неправильно указаны пути к файлам");
         int maxPossible = 0;
         int possibleKey = 0;
         Map<Character, Integer> freqChar = new HashMap<>();
@@ -196,7 +196,7 @@ public class Encapsulant {
     }
 
     private static void calcCharInFileAfterDecode(Path fromFilePath, int key, Map<Character, Integer> freqChar) {
-        if (fromFilePath == null) throw new IllegalArgumentException("Неправильно указаны пути к файлам");
+        if (fromFilePath == null) throw new PathAccessException("Неправильно указаны пути к файлам");
         try (InputStreamReader in = new InputStreamReader(Files.newInputStream(fromFilePath))) {
             int length;
             char[] chars = new char[BUFFER_SIZE];
@@ -204,7 +204,7 @@ public class Encapsulant {
                 codeCharArray(chars, length, key, freqChar);
             }
         } catch (IOException ex) {
-            throw new IllegalArgumentException("Ошибка чтения файла ", ex);
+            throw new PathAccessException("Ошибка чтения файла ", ex);
         }
     }
 }

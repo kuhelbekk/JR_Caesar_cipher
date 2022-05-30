@@ -267,7 +267,7 @@ public class UserDialog {
                 return true;
         } catch (IOException e) {
             outputStream.println("Ошибка доступа к директории: " + toDirPath);
-            throw new IllegalArgumentException("Ошибка доступа к директории: " + toDirPath, e);
+            throw new PathAccessException("Ошибка доступа к директории: " + toDirPath, e);
         }
         return false;
     }
