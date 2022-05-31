@@ -7,142 +7,92 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 
 public class Encapsulant {
     /**
      * Класс для шифрования
-     * в переменных указан символ начала алфавита и длинна алфавита
-     * в множестве frequentChar содержатся наиболее частые буквы алфавитов применяемые в человекочитаемом тексте
+     * в константах указан символ начала алфавита и длинна алфавита
+     * в множестве MOST_COMMON_CHAR содержатся наиболее частые буквы алфавитов применяемые в человекочитаемом тексте
      */
-    private static final char fromKyr = 'Ё';
-    private static final char countKyr = 81;
-    private static final char fromEn = '!';
-    private static final char countEn = 93;
-
-
-    private static final HashSet<Character> frequentChar = new HashSet<>() {{
-        add('a');
-        add('e');
-        add('i');
-        add('o');
-        add('t');
-        add('s');
-        add('n');
-        add('h');
-        add('r');
-        add(' ');
-        add('о');
-        add('е');
-        add('а');
-        add('и');
-        add('н');
-        add('т');
-        add('с');
-        add('р');
-        add('в');
-        add('л');
-    }};
-
-
-
+    private static final char START_CYRILLIC_CHAR = 'Ё';
+    private static final char COUNT_CYRILLIC_CHAR = 81;
+    private static final char START_ASCII_CHAR = '!';
+    private static final char COUNT_ASCII_CHAR = 93;
+    private static final Set<Character> MOST_COMMON_CHAR = new HashSet<>();
+    static {
+        MOST_COMMON_CHAR.add('a');
+        MOST_COMMON_CHAR.add('e');
+        MOST_COMMON_CHAR.add('i');
+        MOST_COMMON_CHAR.add('o');
+        MOST_COMMON_CHAR.add('t');
+        MOST_COMMON_CHAR.add('s');
+        MOST_COMMON_CHAR.add('n');
+        MOST_COMMON_CHAR.add('h');
+        MOST_COMMON_CHAR.add('r');
+        MOST_COMMON_CHAR.add(' ');
+        MOST_COMMON_CHAR.add('о');
+        MOST_COMMON_CHAR.add('е');
+        MOST_COMMON_CHAR.add('а');
+        MOST_COMMON_CHAR.add('и');
+        MOST_COMMON_CHAR.add('н');
+        MOST_COMMON_CHAR.add('т');
+        MOST_COMMON_CHAR.add('с');
+        MOST_COMMON_CHAR.add('р');
+        MOST_COMMON_CHAR.add('в');
+        MOST_COMMON_CHAR.add('л');
+    }
     private static final int BUFFER_SIZE = 1024;
-    private static final int MAX_LETTERS_COUNT_FOR_CHECK = 10;
+    private static final int MAX_LETTERS_COUNT_FOR_CHECK = MOST_COMMON_CHAR.size()/2;
+    private static final int MIN_COUNT_POPULAR_CHAR = 4;
 
-    /**
-     * @param fromFile - что шифруем
-     * @param toFile   - куда шифруем
-     * @param key      - чм шифруем
-     * @param freqChar - если передать не null  то  тут окажется частота символов
-     * @return всегда возвращает true, если не выбросило исключение
-     */
-    public static boolean encodeFile(Path fromFile, Path toFile, int key, Map<Character, Integer> freqChar) {
-        if (fromFile == null || toFile == null) throw new PathAccessException("Неправильно указаны пути к файлам");
-        ;
+    public static void encodeFile(Path fromFile, Path toFile, int key) {
+        encodeFile(fromFile, toFile, key, null);
+    }
+
+    public static void encodeFile(Path fromFile, Path toFile, int key, Map<Character, Integer> symbolFrequency) {
+        if (fromFile == null || toFile == null) throw new PathAccessException("Path is NULL");
         try (InputStreamReader in = new InputStreamReader(Files.newInputStream(fromFile));
              OutputStreamWriter out = new OutputStreamWriter(Files.newOutputStream(toFile))) {
             int length;
-            char[] chars = new char[1024];
+            char[] chars = new char[BUFFER_SIZE];
             while ((length = in.read(chars)) > 0) {
-                codeCharArray(chars, length, key, freqChar);
+                encodeSymbols(chars, length, key, symbolFrequency);
                 out.write(chars, 0, length);
             }
-
         } catch (IOException ex) {
-            throw new PathAccessException("Ошибка чтения/записи файла при шифровании ", ex);
-        }
-        return true;
+            throw new PathAccessException("IO Exception read/write encoding", ex);
+        }        
     }
 
-    public static boolean encodeFile(Path fromFile, Path toFile, int key) {
-        return encodeFile(fromFile, toFile, key, null);
+    public static int bruteForceFile(Path fromFilePath){
+        return bruteForceFile(fromFilePath,null);
     }
-
-    private static char codeChar(char encodedСhar, int key) {
-        if (encodedСhar >= fromKyr && encodedСhar < fromKyr + countKyr) {// кирилица utf-8
-            return (char) (((encodedСhar + key - fromKyr + countKyr * 10) % (countKyr)) + fromKyr);
-        } else if (encodedСhar >= fromEn && encodedСhar < fromEn + countEn) { // big En
-            return (char) (((encodedСhar + key - fromEn + countEn * 10) % (countEn)) + fromEn);
-        }
-        return encodedСhar;
-    }
-
-
-    private static void codeCharArray(char[] chars, int length, int key, Map<Character, Integer> freqChar) {
-        for (int i = 0; i < length; i++) {
-            chars[i] = codeChar(chars[i], key);
-            if (freqChar != null) {
-                char chLower = Character.toLowerCase(chars[i]);
-                // считаем тут частоту символов
-                if (freqChar.containsKey(chLower)) {
-                    freqChar.put(chLower, freqChar.get(chLower) + 1);
-                } else {
-                    freqChar.put(chLower, 1);
-                }
-            }
-        }
-    }
-
-
-    private static String getFileExt(String fileName){
-        String fileExt = "";
-        if (fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0) {
-            fileExt = fileName.substring(fileName.lastIndexOf("."));
-        }
-        return fileExt;
-    }
-
-    private static String getFileName(String fileName){
-        String res = fileName;
-        if (fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0) {
-            res = fileName.substring(0, fileName.lastIndexOf("."));
-        }
-        return res;
-    }
-
 
     public static int bruteForceFile(Path fromFilePath, Path toDirPath) {
-        if (fromFilePath == null || toDirPath == null)
-            throw new PathAccessException("Неправильно указаны пути к файлам");
+        if (fromFilePath == null )
+            throw new PathAccessException("Path is NULL");
         String fileName = getFileName (fromFilePath.getFileName().toString());
-        String fileExt = getFileExt(fromFilePath.getFileName().toString());
-
+        String fileExt = getFileExtension(fromFilePath.getFileName().toString());
         int maxPossible = 0;
         int possibleKey = 0;
-        Map<Character, Integer> freqChar = new HashMap<>();
 
-        for (int i = 0; i > (-countEn); i--) {
-            freqChar.clear();
-            Path newFile = toDirPath.resolve(fileName + " KEY=" + (-i) + fileExt);
-            encodeFile(fromFilePath, newFile, i, freqChar);
-
+        for (int i = 0; i > (-COUNT_ASCII_CHAR); i--) {
+            Map<Character, Integer> symbolFrequency = new HashMap<>();
+            if(toDirPath==null) {
+                calcCharInFileAfterDecode(fromFilePath, i, symbolFrequency);
+            }else {
+                Path newFile = toDirPath.resolve(fileName + " KEY=" + (-i) + fileExt);
+                encodeFile(fromFilePath, newFile, i, symbolFrequency);
+            }
             int possible = 0;
-            int charCount = freqChar.size();
-            if (charCount > MAX_LETTERS_COUNT_FOR_CHECK) charCount = MAX_LETTERS_COUNT_FOR_CHECK;
+            int charCount = MAX_LETTERS_COUNT_FOR_CHECK ;
+            if (symbolFrequency.size() < MAX_LETTERS_COUNT_FOR_CHECK) charCount = symbolFrequency.size();
 
             for (int j = 0; j < charCount; j++) {
-                char c = pollMaxValue(freqChar);
-                if (frequentChar.contains(c))
+                char c = pollMaxValue(symbolFrequency);
+                if (MOST_COMMON_CHAR.contains(c))
                     possible++;
             }
             if (maxPossible < possible) {
@@ -150,12 +100,47 @@ public class Encapsulant {
                 possibleKey = i;
             }
         }
-        if (maxPossible > 4) { //нашли наиболее вероятный ключ
-            //  не знаю, правильно ли сохранять удачно расшифрованный фаил отдельно или достаточно указать ключ для расшифровки
-            // encodeFile(fromFilePath, toDirPath.resolve("$" + maxPossible +" Key = "+(-possibleKey)+ fileName + ext), possibleKey );
+        if (maxPossible > MIN_COUNT_POPULAR_CHAR) {
             return -possibleKey;
         }
         return -1;
+    }
+
+    private static void encodeSymbols(char[] chars, int length, int key, Map<Character, Integer> symbolFrequency) {
+        for (int i = 0; i < length; i++) {
+            chars[i] = encodeSymbol(chars[i], key);
+            if (symbolFrequency != null) {
+                char chLower = Character.toLowerCase(chars[i]);
+                if (symbolFrequency.containsKey(chLower)) {
+                    symbolFrequency.put(chLower, symbolFrequency.get(chLower) + 1);
+                } else {
+                    symbolFrequency.put(chLower, 1);
+                }
+            }
+        }
+    }
+
+    private static char encodeSymbol(char symbol, int key) {
+        if (symbol >= START_CYRILLIC_CHAR && symbol < START_CYRILLIC_CHAR + COUNT_CYRILLIC_CHAR) {
+            return (char) (((symbol + key - START_CYRILLIC_CHAR + COUNT_CYRILLIC_CHAR * 10) % (COUNT_CYRILLIC_CHAR)) + START_CYRILLIC_CHAR);
+        } else if (symbol >= START_ASCII_CHAR && symbol < START_ASCII_CHAR + COUNT_ASCII_CHAR) {
+            return (char) (((symbol + key - START_ASCII_CHAR + COUNT_ASCII_CHAR * 10) % (COUNT_ASCII_CHAR)) + START_ASCII_CHAR);
+        }
+        return symbol;
+    }
+
+    private static String getFileExtension(String fileName){
+        if (fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0) {
+            return  fileName.substring(fileName.lastIndexOf("."));
+        }
+        return "";
+    }
+
+    private static String getFileName(String fileName){
+        if (fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0) {
+            return fileName.substring(0, fileName.lastIndexOf("."));
+        }
+        return fileName;
     }
 
     private static char pollMaxValue(Map<Character, Integer> map) {
@@ -171,43 +156,16 @@ public class Encapsulant {
         return maxValChar;
     }
 
-    public static int encodeAnalysis(Path fromFilePath) {
-        if (fromFilePath == null) throw new PathAccessException("Неправильно указаны пути к файлам");
-        int maxPossible = 0;
-        int possibleKey = 0;
-        Map<Character, Integer> freqChar = new HashMap<>();
-        for (int i = 0; i > (-countEn); i--) {
-            freqChar.clear();
-            calcCharInFileAfterDecode(fromFilePath, i, freqChar);
-            int possible = 0;
-            int charCount = freqChar.size();
-            if (charCount > MAX_LETTERS_COUNT_FOR_CHECK) charCount = MAX_LETTERS_COUNT_FOR_CHECK;
-            for (int j = 0; j < charCount; j++) {
-                char c = pollMaxValue(freqChar);
-                if (frequentChar.contains(c))
-                    possible++;
-            }
-            if (maxPossible < possible) {
-                maxPossible = possible;
-                possibleKey = i;
-            }
-        }
-        if (maxPossible > 4) { //нашли наиболее вероятный ключ
-            return -possibleKey;
-        }
-        return -1;
-    }
-
     private static void calcCharInFileAfterDecode(Path fromFilePath, int key, Map<Character, Integer> freqChar) {
-        if (fromFilePath == null) throw new PathAccessException("Неправильно указаны пути к файлам");
         try (InputStreamReader in = new InputStreamReader(Files.newInputStream(fromFilePath))) {
             int length;
             char[] chars = new char[BUFFER_SIZE];
             while ((length = in.read(chars)) > 0) {
-                codeCharArray(chars, length, key, freqChar);
+                encodeSymbols(chars, length, key, freqChar);
             }
         } catch (IOException ex) {
-            throw new PathAccessException("Ошибка чтения файла ", ex);
+            throw new PathAccessException("IOException read file "+fromFilePath, ex);
         }
     }
 }
+

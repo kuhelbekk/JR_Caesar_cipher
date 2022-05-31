@@ -17,52 +17,41 @@ import java.util.Set;
 public class UserDialog {
     private static final Set<String> YES = Set.of("y", "yes");
     private static final Set<String> NO = Set.of("n", "no");
+    private static final int QUESTION_COUNT = 3;
+    private static final String NOTHING_SELECTED = "К сожалению мне больше нечего вам предложить.";
 
-    Scanner console;
-    PrintStream outputStream;
-    private static final String questionOpenFile = "Укажите путь к исходному файлу.";
-
+    private Scanner console;
+    private PrintStream outputStream;
+    private static final String QUESTION_OPEN_FILE = "Укажите путь к исходному файлу.";
 
     public UserDialog(InputStream in, PrintStream out) {
         this.console = new Scanner(in);
         this.outputStream = out;
     }
 
-
     public void startDialog() {
-        if (questionYesNo("Нужно зашифровать файл? ")) {
-            if (codeDialog(true)) {
-                outputStream.println("Шифровка выполнена удачно.");
-            }
-            return;
-        } else {
-            if (questionYesNo("Нужно расшифровать файл?")) {
+        try {
+            if (questionYesNo("Нужно зашифровать файл? ")) {
+                codeDialog(true);
+            } else if (questionYesNo("Нужно расшифровать файл?")) {
                 if (questionYesNo("Знаете ключ для расшифровки?")) {
-                    if (codeDialog(false)) {
-                        outputStream.println("Расшифровка выполнена удачно.");
-                    } else {
-
-                    }
-                } else {
-                    // bruteforse
-                    if (questionYesNo("Попробуем определить ключ статическим анализом?")) {
-                        staticAnalizeDialog();
-                    } else {
-                        if (questionYesNo("Сохранить все возможные варианты расшифровки?")) {
-                            bruteForseDialog();
-                        }
-                        return;
-                    }
+                    codeDialog(false);
+                } else  if (questionYesNo("Попробуем определить ключ статическим анализом?")) {
+                    staticAnaliseDialog();
+                } else  if (questionYesNo("Сохранить все возможные варианты расшифровки?")) {
+                    bruteForseDialog();
+                }else {
+                    outputStream.println(NOTHING_SELECTED );
                 }
-
             } else {
-                outputStream.println("Извините, я умею только шифровать и расшифровывать.");
-
+                outputStream.println(NOTHING_SELECTED);
             }
+        } catch (PathAccessException ex) {
+            outputStream.println("Произошла ошибка при шифровании"+ ex.getMessage());
+        }catch (Exception e){
+            outputStream.println("Произогла невероятная ошибка"+ e.getMessage());
         }
-
     }
-
 
     /**
      * @param question - Вопрос с предполагаемым ответом да или нет
@@ -71,12 +60,12 @@ public class UserDialog {
      */
 
     private boolean questionYesNo(String question) {
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < QUESTION_COUNT; i++) {
             outputStream.println(question + "y/n (yes or no)");
             String ans = console.nextLine();
-            if (YES.contains(ans) || "yes".equalsIgnoreCase(ans)) {
+            if (YES.contains(ans.toLowerCase())) {
                 return true;
-            } else if ("n".equalsIgnoreCase(ans) || "no".equalsIgnoreCase(ans)) {
+            } else if (NO.contains(ans.toLowerCase())) {
                 return false;
             }
             outputStream.println("Я Вас не понимаю.");
@@ -84,9 +73,8 @@ public class UserDialog {
         return false;
     }
 
-
     /**
-     * Диалог запроса пути файла
+     * Диалог запроса пути файла     *
      *
      * @param question      - вопрос о назначении файла
      * @param createNewFile - нужно ли учитывать что файл будет создан
@@ -95,7 +83,7 @@ public class UserDialog {
 
     private Path requestFile(String question, boolean createNewFile) {
         Path filePath;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < QUESTION_COUNT; i++) {
             outputStream.println(question);
             String file = console.nextLine();
             if (file.length() > 0) {
@@ -113,7 +101,7 @@ public class UserDialog {
     }
 
 
-    private boolean checkFile(Path filePath, boolean createNewFile){
+    private boolean checkFile(Path filePath, boolean createNewFile) {
         if (Files.exists(filePath)) {
             if (Files.isRegularFile(filePath)) {
                 if (createNewFile) {
@@ -145,14 +133,14 @@ public class UserDialog {
     }
 
     /**
-     * Диалог запроса директории
+     * Диалог запроса директории     *
      *
      * @param question - вопрос о назначении файла
      * @return возвращает путь  или null  если пользователь не определился
      */
     private Path requestDir(String question) {
         Path dirPath = null;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < QUESTION_COUNT; i++) {
             outputStream.println(question);
             String dir = console.nextLine();
             try {
@@ -180,13 +168,12 @@ public class UserDialog {
     }
 
 
-
-    private boolean codeDialog(boolean isCode) {
-        Path fromFilePath = requestFile(questionOpenFile, false);
+    private void codeDialog(boolean isCode) {
+        Path fromFilePath = requestFile(QUESTION_OPEN_FILE, false);
         if (fromFilePath != null) {
             Path toFilePath = requestFile("Укажите путь для сохранения обработанного файла.", true);
             if (toFilePath != null) {
-                for (int k = 0; k < 3; k++) {
+                for (int k = 0; k < QUESTION_COUNT; k++) {
                     outputStream.println("Укажите цифровой ключ");
                     if (console.hasNextInt()) {
                         int key = console.nextInt();
@@ -195,30 +182,30 @@ public class UserDialog {
                             continue;
                         }
                         if (isCode) {
-                            return Encapsulant.encodeFile(fromFilePath, toFilePath, key);
+                            Encapsulant.encodeFile(fromFilePath, toFilePath, key);
+                            return;
                         } else {
-                            return Encapsulant.encodeFile(fromFilePath, toFilePath, key * -1);
+                            Encapsulant.encodeFile(fromFilePath, toFilePath, key * -1);
+                            return;
                         }
                     } else {
+                        outputStream.println("Ключ должен быть положительным числом");
                         console.next();
                     }
                 }
             }
         }
-        return false;
     }
 
-    private void staticAnalizeDialog() {
-        Path fromFilePath = requestFile(questionOpenFile, false);
+    private void staticAnaliseDialog() {
+        Path fromFilePath = requestFile(QUESTION_OPEN_FILE, false);
         if (fromFilePath != null) {
-            int key = Encapsulant.encodeAnalysis(fromFilePath);
+            int key = Encapsulant.bruteForceFile(fromFilePath);
             if (key > 0) {
                 outputStream.println("Удалось определить ключ, key =" + key);
                 Path toFilePath = requestFile("Укажите путь для сохранения расшифрованного файла.", true);
                 if (toFilePath != null) {
-                    if (Encapsulant.encodeFile(fromFilePath, toFilePath, -key)) {
-                        outputStream.println("Файл сохранен.");
-                    }
+                    Encapsulant.encodeFile(fromFilePath, toFilePath, -key);
                 }
             } else if (key == 0) {
                 outputStream.println("Скорее всего файл не зашифрован");
@@ -229,7 +216,7 @@ public class UserDialog {
     }
 
     private boolean bruteForseDialog() {
-        Path fromFilePath = requestFile(questionOpenFile, false);
+        Path fromFilePath = requestFile(QUESTION_OPEN_FILE, false);
         if (fromFilePath != null) {
             Path toDirPath = requestDir("Укажите директорию для сохранения результатов.");
             if (toDirPath != null) {
@@ -237,8 +224,6 @@ public class UserDialog {
                     if (fileExistInDir(toDirPath)) {
                         if (questionYesNo("Файлы в директории  могут быть перезаписаны. Продолжить?")) {
                             return startBrutForce(fromFilePath, toDirPath);
-                        } else {
-                            return false;
                         }
                     } else {
                         return startBrutForce(fromFilePath, toDirPath);
@@ -250,7 +235,6 @@ public class UserDialog {
     }
 
     private boolean startBrutForce(Path fromFilePath, Path toDirPath) {
-
         int keyOfBrutForce = Encapsulant.bruteForceFile(fromFilePath, toDirPath);
         if (keyOfBrutForce >= 0) {
             outputStream.println("Наиболее вероятный ключ = " + keyOfBrutForce);
@@ -266,11 +250,9 @@ public class UserDialog {
             for (Path path : files)
                 return true;
         } catch (IOException e) {
-            outputStream.println("Ошибка доступа к директории: " + toDirPath);
-            throw new PathAccessException("Ошибка доступа к директории: " + toDirPath, e);
+            throw new PathAccessException("IO Exception accessing directory: " + toDirPath, e);
         }
         return false;
     }
-
 
 }
