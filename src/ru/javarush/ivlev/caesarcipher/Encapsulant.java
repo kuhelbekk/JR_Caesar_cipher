@@ -52,6 +52,7 @@ public class Encapsulant {
 
     public static void encodeFile(Path fromFile, Path toFile, int key, Map<Character, Integer> symbolFrequency) {
         if (fromFile == null || toFile == null) throw new PathAccessException("Path is NULL");
+        if (fromFile.equals(toFile))throw new PathAccessException("From and new paths is equals");
         try (InputStreamReader in = new InputStreamReader(Files.newInputStream(fromFile));
              OutputStreamWriter out = new OutputStreamWriter(Files.newOutputStream(toFile))) {
             int length;
