@@ -22,11 +22,19 @@ Java Rush
 Для работы ему необходимы потоки ввода вывода, которые передаются при инициализации.
 Старт диалога происходит в функции UserDialog.startDialog() 
 - Encapsulant - класс со статическими методами шифрования и анализа зашифрованного файла
-    ```encodeFile(Path fromFile, Path toFile, int key, Map<Character, Integer> symbolFrequency)```
-    ```encodeFile(Path fromFile, Path toFile, int key)``` 
-  основной метод кодирования/декодирования на вход подаются пути файлов и ключ. если требуется раскодирование то ключ передается отрицательный
+
+    ```Encapsulant.encodeFile(Path fromFile, Path toFile, int key, Map<Character, Integer> symbolFrequency)```
+
+    ```Encapsulant.encodeFile(Path fromFile, Path toFile, int key)``` 
+
+  основной метод кодирования/декодирования на вход подаются пути файлов и ключ. если требуется раскодирование, то ключ передается отрицательный
   также можено в метод педедать мапу в которой вернется частота использованных символов  
-- 
+  
+    ```Encapsulant.bruteForceFile(Path fromFilePath, Path toDirPath) ```
+    ```Encapsulant.bruteForceFile(Path fromFilePath) ```
+  метод взлома, если передан параметр toDirPath, то результат будет сохранен в виде набора файлов в директорию, 
+если параметр не указад то метод подберет с помощью статического анализа ключь и предложит сохранить фаил.  
+
 
 Запуск программы
 -----------
